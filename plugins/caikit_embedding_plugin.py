@@ -93,14 +93,23 @@ class CaikitEmbeddingPlugin(plugin.Plugin):
 
         result.start_time = time.time()
 
-        response = http_client.embedding_tasks(
-            self.model_name,
-            [query["text"] for _ in range(self.batch_size)],
-            parameters={
-                "truncate_input_tokens": self.model_max_input_tokens
-            },
-            timeout=self.timeout
-        )
+        response = None
+        try:
+            response = http_client.embedding_tasks(
+                self.model_name,
+                [query["text"] for _ in range(self.batch_size)],
+                parameters={
+                    "truncate_input_tokens": self.model_max_input_tokens
+                },
+                timeout=self.timeout
+            )
+        except Exception as e:
+            result.end_time = time.time()
+            result.error_text = repr(e)
+            if response is not None:
+                result.error_code = response.status_code
+            logger.exception(f"Error issuing request: {e}")
+            return result
 
         logger.debug("Response: %s", json.dumps(response))
         result.end_time = time.time()
@@ -121,15 +130,23 @@ class CaikitEmbeddingPlugin(plugin.Plugin):
 
         num_objects = 10
 
-        response = http_client.sentence_similarity_tasks(
-            self.model_name,
-            [query["text"] for _ in range(self.batch_size)],
-            list(query["text"] for _ in range(num_objects)),
-            parameters={
-                "truncate_input_tokens": self.model_max_input_tokens
-            },
-            timeout=self.timeout
-        )
+        try:
+            response = http_client.sentence_similarity_tasks(
+                self.model_name,
+                [query["text"] for _ in range(self.batch_size)],
+                list(query["text"] for _ in range(num_objects)),
+                parameters={
+                    "truncate_input_tokens": self.model_max_input_tokens
+                },
+                timeout=self.timeout
+            )
+        except Exception as e:
+            result.end_time = time.time()
+            result.error_text = repr(e)
+            if response is not None:
+                result.error_code = response.status_code
+            logger.exception(f"Error issuing request: {e}")
+            return result
 
         logger.debug("Response: %s", json.dumps(response))
         result.end_time = time.time()
@@ -150,15 +167,23 @@ class CaikitEmbeddingPlugin(plugin.Plugin):
 
         num_objects = 10
 
-        response = http_client.rerank_tasks(
-            self.model_name,
-            [{query["text"]: i} for i in range(num_objects)],
-            [query["text"] for _ in range(self.batch_size)],
-            parameters={
-                "truncate_input_tokens": self.model_max_input_tokens
-            },
-            timeout=self.timeout
-        )
+        try:
+            response = http_client.rerank_tasks(
+                self.model_name,
+                [{query["text"]: i} for i in range(num_objects)],
+                [query["text"] for _ in range(self.batch_size)],
+                parameters={
+                    "truncate_input_tokens": self.model_max_input_tokens
+                },
+                timeout=self.timeout
+            )
+        except Exception as e:
+            result.end_time = time.time()
+            result.error_text = repr(e)
+            if response is not None:
+                result.error_code = response.status_code
+            logger.exception(f"Error issuing request: {e}")
+            return result
 
         logger.debug("Response: %s", json.dumps(response))
         result.end_time = time.time()
